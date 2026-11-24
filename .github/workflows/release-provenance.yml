@@ -26,7 +26,7 @@ jobs:
           cmake -S . -B build
           cmake --build build
           mkdir -p dist
-          cp build/caldova_firmware dist/caldova_firmware
+          cp build/robot_firmware dist/robot_firmware
           cp models/vision-qc-v1.2.safetensors dist/vision-qc-v1.2.safetensors
           sha256sum dist/*
 
@@ -36,7 +36,7 @@ jobs:
         with:
           subject-path: |
             dist/vision-qc-v1.2.safetensors
-            dist/caldova_firmware
+            dist/robot_firmware
 
       - name: Upload Release Artifacts & Provenance Bundle
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -44,4 +44,4 @@ jobs:
           name: robot-release-v1.2
           path: |
             dist/vision-qc-v1.2.safetensors
-            dist/caldova_firmware
+            dist/robot_firmware
