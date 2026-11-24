@@ -1,0 +1,47 @@
+name: Build Firmware & Attest Model Provenance (SLSA)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'src/**'
+      - 'include/**'
+      - 'models/**'
+      - '.github/workflows/release-provenance.yml'
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+
+jobs:
+  build-and-attest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository (Pinned SHA)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Build Caldova Robot Firmware & Package Release
+        run: |
+          cmake -S . -B build
+          cmake --build build
+          mkdir -p dist
+          cp build/caldova_firmware dist/caldova_firmware
+          cp models/vision-qc-v1.2.safetensors dist/vision-qc-v1.2.safetensors
+          sha256sum dist/*
+
+      - name: Generate SLSA Build Provenance Attestation (Pinned SHA)
+        id: attest
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2
+        with:
+          subject-path: |
+            dist/vision-qc-v1.2.safetensors
+            dist/caldova_firmware
+
+      - name: Upload Release Artifacts & Provenance Bundle
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: robot-release-v1.2
+          path: |
+            dist/vision-qc-v1.2.safetensors
+            dist/caldova_firmware
